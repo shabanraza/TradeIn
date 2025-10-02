@@ -2,4 +2,3 @@ packages:
   - 'mobile'
   - 'web'
   - 'shared'
-  - 'backend'

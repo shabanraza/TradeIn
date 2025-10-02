@@ -75,7 +75,7 @@ A modern multi-platform marketplace application that connects customers with app
 - **Shared components** between web and mobile
 
 ### Backend (Unified API)
-- **Next.js 15** with API Routes (serves both mobile and web)
+- **Next.js 15** with API Routes (integrated with PWA)
 - **Neon PostgreSQL** database (serverless, FREE tier)
 - **Drizzle ORM** for database operations
 - **NextAuth.js v4** for authentication (Google + Email OTP)
@@ -104,11 +104,10 @@ oldsellerapp/
 │   │   └── types/             # Shared TypeScript types
 │   ├── assets/                # Images, fonts, etc.
 │   └── package.json
-├── 🌐 web/                    # PWA (Next.js)
-│   ├── pages/                 # PWA pages
+├── 🌐 web/                    # Next.js Full-Stack (API + PWA)
+│   ├── pages/                 # PWA pages + API routes
 │   ├── components/            # Web-specific components
-│   ├── services/              # Shared API services
-│   ├── utils/                 # Shared utilities
+│   ├── lib/                   # Database and utilities
 │   ├── public/                # PWA assets (manifest, icons)
 │   └── package.json
 ├── 📦 shared/                 # Shared code package
@@ -116,11 +115,6 @@ oldsellerapp/
 │   ├── services/              # API services
 │   ├── utils/                 # Utility functions
 │   ├── constants/             # App constants
-│   └── package.json
-├── 🖥️ backend/                # Next.js API (Unified)
-│   ├── pages/api/             # API routes (serves both platforms)
-│   ├── lib/                   # Database and utilities
-│   ├── prisma/                # Database schema
 │   └── package.json
 └── README.md
 ```
@@ -167,12 +161,8 @@ oldsellerapp/
    cd ../mobile
    pnpm install
    
-   # Install web app dependencies
+   # Install Next.js full-stack app dependencies (API + PWA)
    cd ../web
-   pnpm install
-   
-   # Install backend dependencies
-   cd ../backend
    pnpm install
    ```
 
@@ -241,17 +231,13 @@ oldsellerapp/
 
 8. **Run the applications**
    ```bash
-   # Start backend server (serves both mobile and web)
-   cd backend
+   # Start Next.js full-stack app (API + PWA)
+   cd web
    pnpm dev
    
    # Start mobile app (in new terminal)
    cd mobile
    pnpm start
-   
-   # Start web app (in new terminal)
-   cd web
-   pnpm dev
    ```
 
 ## 📱 App Screens

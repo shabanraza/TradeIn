@@ -5,14 +5,13 @@
   "private": true,
   "workspaces": [
     "mobile",
-    "web", 
-    "shared",
-    "backend"
+    "web",
+    "shared"
   ],
   "scripts": {
-    "dev": "concurrently \"pnpm --filter backend dev\" \"pnpm --filter web dev\"",
+    "dev": "pnpm --filter web dev",
     "dev:mobile": "pnpm --filter mobile start",
-    "build": "pnpm --filter backend build && pnpm --filter web build",
+    "build": "pnpm --filter web build",
     "build:mobile": "pnpm --filter mobile build",
     "test": "pnpm --filter shared test",
     "lint": "pnpm --filter shared lint",
@@ -20,6 +19,7 @@
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
+    "drizzle-kit": "^0.31.5",
     "typescript": "^5.3.0"
   },
   "engines": {
