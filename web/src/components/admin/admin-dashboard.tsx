@@ -1,11 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Users, Store, Smartphone, ShoppingCart, TrendingUp, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
+
+// TanStack Query hooks
+import { usePhoneBrands, useLeads } from '@oldsellerapp/shared';
+import { useRetailers } from '@/hooks/api/useRetailers';
+import { useUsers } from '@/hooks/api/useUsers';
+import { useAdminStats } from '@/hooks/api/useAdminStats';
+import { LoadingSpinner } from '@/components/common/loading-spinner';
+import { ErrorBoundary } from '@/components/common/error-boundary';
 
 interface DashboardStats {
   users: {
@@ -31,49 +38,37 @@ interface DashboardStats {
 }
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<DashboardStats>({
+  // TanStack Query hooks
+  const { data: adminStats, isLoading: statsLoading, error: statsError } = useAdminStats();
+  const { data: brands, isLoading: brandsLoading, error: brandsError } = usePhoneBrands('');
+  const { data: leads, isLoading: leadsLoading, error: leadsError } = useLeads();
+  const { data: retailers, isLoading: retailersLoading, error: retailersError } = useRetailers();
+  const { data: users, isLoading: usersLoading, error: usersError } = useUsers();
+
+  const isLoading = statsLoading || brandsLoading || leadsLoading || retailersLoading || usersLoading;
+  const error = statsError || brandsError || leadsError || retailersError || usersError;
+
+  // Calculate stats from TanStack Query data
+  const stats = adminStats || {
     users: {
-      total: 0,
-      customers: 0,
-      retailers: 0,
-      pendingRetailers: 0,
-      activeRetailers: 0
+      total: users?.length || 0,
+      customers: users?.filter(u => u.role === 'customer').length || 0,
+      retailers: users?.filter(u => u.role === 'retailer').length || 0,
+      pendingRetailers: retailers?.filter(r => !r.isRetailerApproved).length || 0,
+      activeRetailers: retailers?.filter(r => r.isRetailerApproved).length || 0
     },
     phoneDatabase: {
-      brands: 0,
-      models: 0,
-      variants: 0
+      brands: brands?.length || 0,
+      models: 0, // Would need a usePhoneModels hook
+      variants: 0 // Would need a usePhoneVariants hook
     },
     leads: {
-      total: 0,
-      new: 0,
-      contacted: 0,
-      interested: 0,
-      closed: 0,
-      rejected: 0
-    }
-  });
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
-    try {
-      setIsLoading(true);
-      
-      // Fetch stats data
-      const statsResponse = await fetch('/api/admin/stats');
-      const statsData = await statsResponse.json();
-      
-      if (statsData.success) {
-        setStats(statsData.stats);
-      }
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-    } finally {
-      setIsLoading(false);
+      total: leads?.length || 0,
+      new: leads?.filter(l => l.status === 'pending').length || 0,
+      contacted: leads?.filter(l => l.status === 'approved').length || 0,
+      interested: leads?.filter(l => l.status === 'completed').length || 0,
+      closed: leads?.filter(l => l.status === 'completed').length || 0,
+      rejected: leads?.filter(l => l.status === 'rejected').length || 0
     }
   };
 
@@ -82,7 +77,10 @@ export default function AdminDashboard() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-          <p className="text-muted-foreground">Loading dashboard data...</p>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <LoadingSpinner size="sm" />
+            <span>Loading dashboard data...</span>
+          </div>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -97,6 +95,20 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
           ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+          <div className="text-red-600">
+            <h2 className="text-lg font-medium">Error Loading Dashboard</h2>
+            <p className="text-sm">Failed to load dashboard data. Please try again.</p>
+          </div>
         </div>
       </div>
     );

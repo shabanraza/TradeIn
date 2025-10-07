@@ -1,54 +1,24 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth/config';
+import { auth } from "@/lib/auth/config";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('Comprehensive Better Auth sign out API called');
+    console.log('Better Auth sign-out endpoint called');
     
-    // Use Better Auth's built-in sign out functionality
-    try {
-      const response = await auth.api.signOut({
-        headers: request.headers,
-      });
-      console.log('Better Auth sign out response:', response);
-    } catch (error) {
-      console.log('Better Auth sign out error (normal for OTP sessions):', error);
+    // Use Better Auth's signOut method
+    const result = await auth.api.signOut({
+      headers: request.headers,
+    });
+
+    if (result) {
+      console.log('Better Auth sign-out successful');
+      return NextResponse.json({ success: true, message: 'Signed out successfully' });
+    } else {
+      console.log('Better Auth sign-out failed');
+      return NextResponse.json({ success: false, message: 'Sign out failed' }, { status: 400 });
     }
-
-    // Create response with cleared cookies
-    const nextResponse = NextResponse.json({ 
-      success: true, 
-      message: 'Signed out successfully' 
-    });
-
-    // Clear all possible session cookies
-    const cookiesToClear = [
-      'better-auth.session_token',
-      'better-auth.session-token',
-      'session_token',
-      'session',
-      'auth-token',
-      'auth_token'
-    ];
-
-    cookiesToClear.forEach(cookieName => {
-      nextResponse.cookies.set(cookieName, '', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 0,
-        path: '/',
-        expires: new Date(0)
-      });
-    });
-
-    return nextResponse;
-
   } catch (error) {
-    console.error('Better Auth sign out error:', error);
-    return NextResponse.json(
-      { error: 'Failed to sign out' }, 
-      { status: 500 }
-    );
+    console.error('Better Auth sign-out error:', error);
+    return NextResponse.json({ success: false, message: 'Sign out error' }, { status: 500 });
   }
 }

@@ -1,6 +1,8 @@
 // This file should only be used on the server-side
 // Image processing utilities for server-side use only
 
+import sharp from 'sharp';
+
 // Industry standard image size limits
 export const IMAGE_LIMITS = {
   // Brand logos: 512x512px max, 2MB max file size

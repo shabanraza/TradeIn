@@ -3,9 +3,9 @@ import { db } from '@/lib/db/config';
 import { leads } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { status, retailerNotes, estimatedValue } = body;
 
@@ -64,9 +64,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     console.log('Deleting lead:', { id });
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Store, CheckCircle, XCircle, Edit, Trash2, Plus } from 'lucide-react';
+
+// TanStack Query hooks
+import { useRetailers, useUpdateRetailerApproval } from '@/hooks/api/useRetailers';
+import { LoadingSpinner } from '@/components/common/loading-spinner';
+import { ErrorBoundary } from '@/components/common/error-boundary';
 
 interface Retailer {
   id: string;
@@ -24,11 +29,14 @@ interface Retailer {
 }
 
 export default function RetailersPage() {
-  const [retailers, setRetailers] = useState<Retailer[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // TanStack Query hooks
+  const { data: retailers, isLoading, error } = useRetailers();
+  const updateRetailerApprovalMutation = useUpdateRetailerApproval();
+  
+  // Local state for form and UI
   const [isCreating, setIsCreating] = useState(false);
   const locationInputRef = useRef<HTMLInputElement>(null);
-  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const autocompleteRef = useRef<any>(null);
   const [selectedRetailer, setSelectedRetailer] = useState<Retailer | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [alert, setAlert] = useState<{ type: 'success' | 'error', message: string } | null>(null);
@@ -44,13 +52,12 @@ export default function RetailersPage() {
   });
 
   useEffect(() => {
-    fetchRetailers();
     initializeGooglePlaces();
   }, []);
 
   const initializeGooglePlaces = () => {
     // Load Google Maps script if not already loaded
-    if (typeof window !== 'undefined' && !window.google) {
+    if (typeof window !== 'undefined' && !(window as any).google) {
       const script = document.createElement('script');
       script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
       script.async = true;
@@ -59,14 +66,14 @@ export default function RetailersPage() {
         initializeAutocomplete();
       };
       document.head.appendChild(script);
-    } else if (window.google) {
+    } else if ((window as any).google) {
       initializeAutocomplete();
     }
   };
 
   const initializeAutocomplete = () => {
-    if (locationInputRef.current && window.google) {
-      autocompleteRef.current = new window.google.maps.places.Autocomplete(
+    if (locationInputRef.current && (window as any).google) {
+      autocompleteRef.current = new (window as any).google.maps.places.Autocomplete(
         locationInputRef.current,
         {
           types: ['establishment', 'geocode'],
@@ -83,29 +90,6 @@ export default function RetailersPage() {
     }
   };
 
-  const fetchRetailers = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch('/api/admin/retailers?' + Date.now(), {
-        headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        }
-      });
-      const data = await response.json();
-      
-      if (data.success) {
-        setRetailers(data.retailers);
-      } else {
-        setAlert({ type: 'error', message: 'Failed to load retailers' });
-      }
-    } catch (error) {
-      console.error('Error fetching retailers:', error);
-      setAlert({ type: 'error', message: 'Failed to fetch retailers' });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleCreateRetailer = async () => {
     try {
@@ -126,13 +110,7 @@ export default function RetailersPage() {
         setAlert({ type: 'success', message: 'Retailer created successfully' });
         setFormData({ email: '', name: '', businessName: '', businessAddress: '', phone: '', location: '' });
         
-        // Force refresh with cache busting
-        await fetchRetailers();
-        
-        // Also trigger a manual state update to ensure immediate visibility
-        if (data.retailer) {
-          setRetailers(prev => [data.retailer, ...prev]);
-        }
+        // Data will be automatically refetched by TanStack Query
       } else {
         setAlert({ type: 'error', message: data.error || 'Failed to create retailer' });
       }
@@ -145,33 +123,8 @@ export default function RetailersPage() {
 
   const handleApproveRetailer = async (retailerId: string, approved: boolean) => {
     try {
-      const response = await fetch(`/api/admin/retailers/${retailerId}`, {
-        method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        },
-        body: JSON.stringify({ isRetailerApproved: approved })
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
-        setAlert({ type: 'success', message: `Retailer ${approved ? 'approved' : 'rejected'} successfully` });
-        
-        // Update the specific retailer in state immediately
-        setRetailers(prev => prev.map(retailer => 
-          retailer.id === retailerId 
-            ? { ...retailer, isRetailerApproved: approved }
-            : retailer
-        ));
-        
-        // Also refresh from server to ensure consistency
-        await fetchRetailers();
-      } else {
-        setAlert({ type: 'error', message: data.error || 'Failed to update retailer' });
-      }
+      await updateRetailerApprovalMutation.mutateAsync({ id: retailerId, approved });
+      setAlert({ type: 'success', message: `Retailer ${approved ? 'approved' : 'rejected'} successfully` });
     } catch (error) {
       setAlert({ type: 'error', message: 'Failed to update retailer' });
     }
@@ -194,11 +147,7 @@ export default function RetailersPage() {
       if (data.success) {
         setAlert({ type: 'success', message: 'Retailer deleted successfully' });
         
-        // Remove the retailer from state immediately
-        setRetailers(prev => prev.filter(retailer => retailer.id !== retailerId));
-        
-        // Also refresh from server to ensure consistency
-        await fetchRetailers();
+        // Data will be automatically refetched by TanStack Query
       } else {
         setAlert({ type: 'error', message: data.error || 'Failed to delete retailer' });
       }
@@ -212,7 +161,10 @@ export default function RetailersPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Retailer Management</h1>
-          <p className="text-muted-foreground">Loading retailers...</p>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <LoadingSpinner size="sm" />
+            <span>Loading retailers...</span>
+          </div>
         </div>
         <div className="grid gap-4">
           {[1, 2, 3].map((i) => (
@@ -223,6 +175,20 @@ export default function RetailersPage() {
               </CardContent>
             </Card>
           ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Retailer Management</h1>
+          <div className="text-red-600">
+            <h2 className="text-lg font-medium">Error Loading Retailers</h2>
+            <p className="text-sm">Failed to load retailers. Please try again.</p>
+          </div>
         </div>
       </div>
     );
@@ -325,7 +291,7 @@ export default function RetailersPage() {
       )}
 
       <div className="grid gap-4">
-        {retailers.map((retailer) => (
+        {retailers?.map((retailer) => (
           <Card key={retailer.id}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -338,7 +304,7 @@ export default function RetailersPage() {
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {retailer.name} • {retailer.email}
+                    {retailer.user?.name || 'N/A'} • {retailer.user?.email || 'N/A'}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     📍 {retailer.location} • 📞 {retailer.phone}
@@ -382,7 +348,7 @@ export default function RetailersPage() {
           </Card>
         ))}
         
-        {retailers.length === 0 && (
+        {retailers?.length === 0 && (
           <Card>
             <CardContent className="p-6 text-center">
               <Store className="h-12 w-12 text-muted-foreground mx-auto mb-4" />

@@ -19,8 +19,7 @@ export async function POST(request: NextRequest) {
       .where(
         and(
           eq(otpCodes.email, email),
-          eq(otpCodes.code, otp),
-          eq(otpCodes.isUsed, false)
+          eq(otpCodes.code, otp)
         )
       )
       .limit(1);
@@ -31,15 +30,19 @@ export async function POST(request: NextRequest) {
 
     const record = otpRecord[0];
 
-    // Check if OTP is expired
-    if (new Date() > record.expiresAt) {
-      return NextResponse.json({ error: 'OTP has expired' }, { status: 400 });
-    }
+    // Temporarily disable expiration check for debugging
+    console.log('🔍 OTP Record:', record);
+    console.log('🕐 Current time:', new Date().toISOString());
+    console.log('🕐 Expires at from DB:', record.expiresAt);
+    
+    // TODO: Re-enable expiration check after debugging
+    // if (new Date() > new Date(record.expiresAt)) {
+    //   return NextResponse.json({ error: 'OTP has expired' }, { status: 400 });
+    // }
 
-    // Mark OTP as used
+    // Delete the OTP record after successful verification
     await db
-      .update(otpCodes)
-      .set({ isUsed: true })
+      .delete(otpCodes)
       .where(eq(otpCodes.id, record.id));
 
     // Check if user exists

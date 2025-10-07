@@ -9,6 +9,7 @@ interface User {
   role: string;
   isEmailVerified: boolean;
   image?: string;
+  location?: string;
 }
 
 interface SessionContextType {
@@ -38,13 +39,99 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       checkSession();
     };
 
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('Page became visible - refreshing session');
+        checkSession(true); // Force refresh when page becomes visible
+      }
+    };
+
+    const handleFocus = () => {
+      console.log('Window focused - refreshing session');
+      checkSession(true); // Force refresh when window gains focus
+    };
+
+    const handleForceRefresh = () => {
+      console.log('Force session refresh triggered');
+      checkSession(true); // Force refresh when cache buster triggers
+    };
+
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('forceSessionRefresh', handleForceRefresh);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('forceSessionRefresh', handleForceRefresh);
+    };
   }, []);
 
-  const checkSession = async () => {
+  const processPendingLead = async (formData: any, customerId: string) => {
     try {
-      console.log('Checking session...');
+      // Use TanStack Query mutation for lead creation
+      const { createLead } = await import('@/lib/api/leads-api');
+      
+      // Create lead using TanStack Query
+      const lead = await createLead({
+        ...formData,
+        customerId,
+        status: 'pending'
+      });
+
+      if (lead) {
+        console.log('Pending lead submitted successfully');
+        // Clear pending data
+        localStorage.removeItem('pendingLeadData');
+        localStorage.removeItem('pendingLeadProcessing');
+        // Redirect to my listings
+        window.location.href = '/my-listings';
+      } else {
+        console.error('Failed to submit pending lead');
+        // Clear processing flag on failure
+        localStorage.removeItem('pendingLeadProcessing');
+      }
+    } catch (error) {
+      console.error('Error submitting pending lead:', error);
+      // Clear processing flag on error
+      localStorage.removeItem('pendingLeadProcessing');
+    }
+  };
+
+  const checkSession = async (forceRefresh = false) => {
+    try {
+      console.log('Checking session...', forceRefresh ? '(force refresh)' : '');
+      
+      // Clear any stale processing flags on app startup
+      const processingFlag = localStorage.getItem('pendingLeadProcessing');
+      if (processingFlag) {
+        const flagTime = parseInt(processingFlag);
+        const now = Date.now();
+        // If flag is older than 5 minutes, clear it
+        if (now - flagTime > 5 * 60 * 1000) {
+          localStorage.removeItem('pendingLeadProcessing');
+          console.log('Cleared stale processing flag');
+        }
+      }
+      
+      // Force clear any cached session data if force refresh
+      if (forceRefresh) {
+        console.log('Force refreshing session - clearing cache');
+        // Clear any cached session data
+        if (typeof window !== 'undefined') {
+          // Clear any session-related localStorage
+          const keysToRemove = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.includes('session')) {
+              keysToRemove.push(key);
+            }
+          }
+          keysToRemove.forEach(key => localStorage.removeItem(key));
+        }
+      }
       
       let userFound = false;
       
@@ -52,10 +139,12 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       try {
         const sessionResponse = await fetch('/api/auth/session?' + Date.now(), {
           credentials: 'include',
+          cache: 'no-store',
           headers: {
             'Content-Type': 'application/json',
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
           },
         });
         const sessionData = await sessionResponse.json();
@@ -66,6 +155,48 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
           console.log('User found via session:', sessionData.user.email, 'Login method:', sessionData.loginMethod);
           setUser(sessionData.user);
           userFound = true;
+          
+          // Check for pending lead data after successful login
+          const pendingData = localStorage.getItem('pendingLeadData');
+          const processingFlag = localStorage.getItem('pendingLeadProcessing');
+          
+          if (pendingData && !processingFlag) {
+            console.log('Found pending lead data, processing...');
+            // Set processing flag to prevent duplicate processing
+            localStorage.setItem('pendingLeadProcessing', Date.now().toString());
+            
+            try {
+              await processPendingLead(JSON.parse(pendingData), sessionData.user.id);
+              // Clear the pending data after successful processing
+              localStorage.removeItem('pendingLeadData');
+              localStorage.removeItem('pendingLeadProcessing');
+              console.log('Pending lead data processed and cleared');
+            } catch (error) {
+              console.error('Error processing pending lead:', error);
+              // Clear processing flag on error
+              localStorage.removeItem('pendingLeadProcessing');
+              // Keep the data in localStorage if processing failed
+            }
+          }
+
+          // Check for pending location update
+          const pendingLocation = localStorage.getItem('pendingLocation');
+          if (pendingLocation) {
+            console.log('Found pending location, updating user...');
+            try {
+              await fetch('/api/user/update-location', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ location: pendingLocation }),
+              });
+              console.log('Location updated successfully:', pendingLocation);
+              localStorage.removeItem('pendingLocation');
+            } catch (error) {
+              console.error('Failed to update location:', error);
+            }
+          }
         } else {
           console.log('No user found in session');
         }
@@ -174,7 +305,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 
   const refreshSession = () => {
     setIsLoading(true);
-    checkSession();
+    checkSession(true); // Force refresh
   };
 
   const forceSignOut = async () => {

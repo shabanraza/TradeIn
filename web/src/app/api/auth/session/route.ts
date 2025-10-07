@@ -8,6 +8,13 @@ export async function GET(request: NextRequest) {
   try {
     console.log('Unified Session API - Checking both Better Auth and custom sessions...');
     
+    // Add cache-busting headers to prevent stale data
+    const response = new NextResponse();
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    response.headers.set('Surrogate-Control', 'no-store');
+    
     // First try Better Auth session (for Google OAuth)
     try {
       const betterAuthSession = await auth.api.getSession({
@@ -40,6 +47,13 @@ export async function GET(request: NextRequest) {
             user: fullUserData, 
             session: betterAuthSession,
             loginMethod: 'google'
+          }, {
+            headers: {
+              'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+              'Pragma': 'no-cache',
+              'Expires': '0',
+              'Surrogate-Control': 'no-store'
+            }
           });
         }
       }
@@ -68,7 +82,14 @@ export async function GET(request: NextRequest) {
         if (sessionRecord[0].expiresAt < now) {
           // Delete expired session
           await db.delete(sessions).where(eq(sessions.token, sessionToken));
-          return NextResponse.json({ user: null, session: null });
+          return NextResponse.json({ user: null, session: null }, {
+            headers: {
+              'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+              'Pragma': 'no-cache',
+              'Expires': '0',
+              'Surrogate-Control': 'no-store'
+            }
+          });
         }
 
         // Get user data
@@ -84,18 +105,40 @@ export async function GET(request: NextRequest) {
             user: user[0], 
             session: sessionRecord[0],
             loginMethod: 'otp'
+          }, {
+            headers: {
+              'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+              'Pragma': 'no-cache',
+              'Expires': '0',
+              'Surrogate-Control': 'no-store'
+            }
           });
         }
       }
     }
 
-    return NextResponse.json({ user: null, session: null });
+    return NextResponse.json({ user: null, session: null }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+        'Surrogate-Control': 'no-store'
+      }
+    });
 
   } catch (error) {
     console.error('Unified session API error:', error);
     return NextResponse.json(
       { error: 'Failed to get session' }, 
-      { status: 500 }
+      { 
+        status: 500,
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+          'Surrogate-Control': 'no-store'
+        }
+      }
     );
   }
 }

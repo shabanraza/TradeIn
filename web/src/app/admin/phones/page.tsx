@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,17 +13,24 @@ import Link from 'next/link';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { ImageUpload } from '@/components/ui/image-upload';
 
+// TanStack Query hooks
+import { usePhoneBrands } from '@oldsellerapp/shared';
+import { LoadingSpinner } from '@/components/common/loading-spinner';
+import { ErrorBoundary } from '@/components/common/error-boundary';
+
 interface PhoneBrand {
   id: string;
   name: string;
   description: string;
   icon: string;
-  createdAt: string;
+  createdAt: Date;
 }
 
 export default function PhonesPage() {
-  const [brands, setBrands] = useState<PhoneBrand[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // TanStack Query hooks
+  const { data: brands, isLoading, error } = usePhoneBrands('');
+  
+  // Local state for form and UI
   const [alert, setAlert] = useState<{ type: 'success' | 'error', message: string } | null>(null);
   const [brandForm, setBrandForm] = useState({ name: '', description: '', icon: '' });
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -31,50 +38,6 @@ export default function PhonesPage() {
   const [editingBrand, setEditingBrand] = useState<PhoneBrand | null>(null);
   const [isEditing, setIsEditing] = useState(false);
 
-  // Function to ensure phone tables exist
-  const ensurePhoneTablesExist = async () => {
-    try {
-      const response = await fetch('/api/admin/create-phone-tables', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      
-      if (response.ok) {
-        console.log('✅ Phone tables ensured');
-      } else {
-        console.log('⚠️ Phone tables creation failed or already exist');
-      }
-    } catch (error) {
-      console.log('⚠️ Could not ensure phone tables:', error);
-    }
-  };
-
-  useEffect(() => {
-    const initializeData = async () => {
-      await ensurePhoneTablesExist();
-      await fetchBrands();
-    };
-    initializeData();
-  }, []);
-
-  const fetchBrands = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch('/api/admin/phone-brands?' + Date.now());
-      const data = await response.json();
-      
-      if (data.success) {
-        setBrands(data.brands);
-      } else {
-        setAlert({ type: 'error', message: 'Failed to load brands' });
-      }
-    } catch (error) {
-      console.error('Error fetching brands:', error);
-      setAlert({ type: 'error', message: 'Failed to load brands' });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleCreateBrand = async () => {
     try {
@@ -100,7 +63,7 @@ export default function PhonesPage() {
         }
       }
 
-      const response = await fetch('/api/admin/phone-brands', {
+      const response = await fetch('/api/phone-brands', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -115,7 +78,7 @@ export default function PhonesPage() {
         setAlert({ type: 'success', message: 'Brand created successfully' });
         setBrandForm({ name: '', description: '', icon: '' });
         setSelectedImage(null);
-        fetchBrands();
+        // Data will be automatically refetched by TanStack Query
       } else {
         setAlert({ type: 'error', message: data.error || 'Failed to create brand' });
       }
@@ -156,7 +119,7 @@ export default function PhonesPage() {
         }
       }
 
-      const response = await fetch('/api/admin/phone-brands', {
+      const response = await fetch('/api/phone-brands', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -174,7 +137,7 @@ export default function PhonesPage() {
         setSelectedImage(null);
         setEditingBrand(null);
         setIsEditing(false);
-        fetchBrands();
+        // Data will be automatically refetched by TanStack Query
       } else {
         setAlert({ type: 'error', message: data.error || 'Failed to update brand' });
       }
@@ -189,7 +152,7 @@ export default function PhonesPage() {
     }
 
     try {
-      const response = await fetch(`/api/admin/phone-brands?id=${brandId}`, {
+      const response = await fetch(`/api/phone-brands?id=${brandId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -198,7 +161,7 @@ export default function PhonesPage() {
       
       if (data.success) {
         setAlert({ type: 'success', message: 'Brand deleted successfully' });
-        fetchBrands();
+        // Data will be automatically refetched by TanStack Query
       } else {
         setAlert({ type: 'error', message: data.error || 'Failed to delete brand' });
       }
@@ -335,8 +298,24 @@ export default function PhonesPage() {
         </Alert>
       )}
 
-      <div className={viewMode === 'grid' ? 'grid gap-4 md:grid-cols-2 lg:grid-cols-3' : 'space-y-4'}>
-        {brands.map((brand) => (
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <LoadingSpinner size="lg" />
+          <span className="ml-2 text-muted-foreground">Loading brands...</span>
+        </div>
+      ) : error ? (
+        <div className="text-center py-12">
+          <div className="text-red-600 mb-4">
+            <h3 className="text-lg font-medium">Error Loading Brands</h3>
+            <p className="text-sm">Failed to load phone brands. Please try again.</p>
+          </div>
+          <Button onClick={() => window.location.reload()}>
+            Retry
+          </Button>
+        </div>
+      ) : (
+        <div className={viewMode === 'grid' ? 'grid gap-4 md:grid-cols-2 lg:grid-cols-3' : 'space-y-4'}>
+          {brands?.map((brand) => (
           <Card key={brand.id} className="hover:shadow-md transition-shadow">
             {viewMode === 'grid' ? (
               <>
@@ -428,7 +407,7 @@ export default function PhonesPage() {
           </Card>
         ))}
         
-        {brands.length === 0 && (
+          {brands?.length === 0 && (
           <Card className="col-span-full">
             <CardContent className="p-6 text-center">
               <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -438,8 +417,9 @@ export default function PhonesPage() {
               </p>
             </CardContent>
           </Card>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

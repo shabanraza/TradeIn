@@ -31,9 +31,9 @@ export async function GET(request: NextRequest) {
 
     // Group users by role
     const usersByRole = {
-      customer: allUsers.filter(user => user.role === 'customer'),
-      retailer: allUsers.filter(user => user.role === 'retailer'),
-      admin: allUsers.filter(user => user.role === 'admin')
+      customer: allUsers.filter((user: any) => user.role === 'customer'),
+      retailer: allUsers.filter((user: any) => user.role === 'retailer'),
+      admin: allUsers.filter((user: any) => user.role === 'admin')
     };
 
     return NextResponse.json({

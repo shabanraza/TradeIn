@@ -16,7 +16,7 @@ import {
   Heart, 
   MessageCircle, 
   TrendingUp, 
-  DollarSign,
+  IndianRupee,
   ShoppingCart,
   Star,
   Settings,
@@ -33,6 +33,7 @@ const mockUser = {
   role: 'retailer' as const,
   rating: 4.9,
   totalSales: 156,
+  totalReviews: 89,
   verified: true,
   joinedDate: new Date('2023-06-15'),
 };
@@ -121,7 +122,7 @@ export default function DashboardPage() {
 
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-6">
+      <div>
         {/* Dashboard Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -218,7 +219,7 @@ export default function DashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-yellow-100 rounded-lg">
-                  <DollarSign className="w-6 h-6 text-yellow-600" />
+                  <IndianRupee className="w-6 h-6 text-yellow-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>

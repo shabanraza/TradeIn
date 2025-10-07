@@ -34,7 +34,7 @@ export default function PhoneModelsPage() {
   const fetchModels = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/admin/phone-models');
+      const response = await fetch('/api/phone-models');
       const data = await response.json();
       
       if (data.success) {
