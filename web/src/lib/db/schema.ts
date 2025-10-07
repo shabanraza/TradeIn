@@ -76,8 +76,9 @@ export const otpCodes = pgTable('otp_codes', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   email: text('email').notNull(),
   code: text('code').notNull(),
-  expiresAt: timestamp('expiresAt', { mode: 'date', withTimezone: true }).notNull(),
-  createdAt: timestamp('createdAt', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
+  expiresAt: timestamp('expires_at', { mode: 'date', withTimezone: true }).notNull(),
+  isUsed: boolean('is_used').notNull().default(false),
+  createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
 });
 
 // Legacy marketplace tables (keeping for backward compatibility)
@@ -86,28 +87,38 @@ export const categories = pgTable('categories', {
   name: text('name').notNull(),
   description: text('description'),
   image: text('image'),
-  createdAt: timestamp('createdAt', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp('updatedAt', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
+  createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
 });
+
+// Using existing phone-specific tables instead of generic brands/models
 
 export const products = pgTable('products', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   name: text('name').notNull(),
+  title: text('title'),
   description: text('description'),
   price: decimal('price', { precision: 10, scale: 2 }).notNull(),
+  originalPrice: decimal('original_price', { precision: 10, scale: 2 }),
+  discountPrice: decimal('discount_price', { precision: 10, scale: 2 }),
+  discountPercentage: integer('discount_percentage'),
   condition: productConditionEnum('condition').notNull(),
-  categoryId: text('categoryId').references(() => categories.id, { onDelete: 'cascade' }),
-  sellerId: text('sellerId').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  categoryId: text('category_id').references(() => categories.id, { onDelete: 'cascade' }),
+  phoneBrandId: text('phone_brand_id').references(() => phoneBrands.id, { onDelete: 'cascade' }),
+  phoneModelId: text('phone_model_id').references(() => phoneModels.id, { onDelete: 'cascade' }),
+  phoneVariantId: text('phone_variant_id').references(() => phoneVariants.id, { onDelete: 'cascade' }),
+  phoneType: text('phone_type'), // 'new', 'used', 'refurbished'
+  retailerId: text('retailer_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   images: json('images').$type<string[]>(),
-  isActive: boolean('isActive').notNull().default(true),
-  createdAt: timestamp('createdAt', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp('updatedAt', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
+  isActive: boolean('is_active').notNull().default(true),
+  createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
 });
 
 export const orders = pgTable('orders', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   buyerId: text('buyerId').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  sellerId: text('sellerId').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  retailerId: text('retailerId').notNull().references(() => users.id, { onDelete: 'cascade' }),
   productId: text('productId').notNull().references(() => products.id, { onDelete: 'cascade' }),
   status: orderStatusEnum('status').notNull().default('pending'),
   totalAmount: decimal('totalAmount', { precision: 10, scale: 2 }).notNull(),
@@ -177,8 +188,8 @@ export const productsRelations = relations(products, ({ one, many }) => ({
     fields: [products.categoryId],
     references: [categories.id],
   }),
-  seller: one(users, {
-    fields: [products.sellerId],
+  retailer: one(users, {
+    fields: [products.retailerId],
     references: [users.id],
   }),
   orders: many(orders),
@@ -189,8 +200,8 @@ export const ordersRelations = relations(orders, ({ one, many }) => ({
     fields: [orders.buyerId],
     references: [users.id],
   }),
-  seller: one(users, {
-    fields: [orders.sellerId],
+  retailer: one(users, {
+    fields: [orders.retailerId],
     references: [users.id],
   }),
   product: one(products, {
@@ -262,7 +273,7 @@ export const phoneVariants = pgTable('phone_variants', {
 export const leads = pgTable('leads', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   customerId: text('customerId').notNull(),
-  retailerId: text('retailerId').notNull(),
+  retailerId: text('retailerId'),
   phoneBrand: text('phoneBrand').notNull(),
   phoneModel: text('phoneModel').notNull(),
   phoneVariant: text('phoneVariant'),
@@ -282,6 +293,13 @@ export const leads = pgTable('leads', {
   status: text('status').notNull().default('new'),
   notes: text('notes'),
   retailerNotes: text('retailerNotes'),
+  // New fields for the form (using snake_case to match existing columns)
+  phoneAge: text('phone_age'),
+  hasBill: boolean('has_bill').default(false),
+  billImage: text('bill_image'),
+  hasBox: boolean('has_box').default(false),
+  screenReplacement: text('screen_replacement'),
+  batteryPercentage: text('battery_percentage'),
   createdAt: timestamp('createdAt', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updatedAt', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
 });
