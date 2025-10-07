@@ -11,18 +11,23 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Users, Search, Filter, Mail, Phone, MapPin, Calendar, Shield, Store, User } from 'lucide-react';
 
+// TanStack Query hooks
+import { useUsers } from '@/hooks/api/useUsers';
+import { LoadingSpinner } from '@/components/common/loading-spinner';
+import { ErrorBoundary } from '@/components/common/error-boundary';
+
 interface User {
   id: string;
   email: string;
   name: string;
   role: string;
-  isEmailVerified: boolean;
+  emailVerified: boolean;
   isRetailerApproved: boolean;
-  businessName: string;
-  businessAddress: string;
-  phone: string;
-  location: string;
-  createdAt: string;
+  businessName?: string;
+  businessAddress?: string;
+  phone?: string;
+  location?: string;
+  createdAt: Date;
 }
 
 interface UserStats {
@@ -33,41 +38,24 @@ interface UserStats {
 }
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<User[]>([]);
+  // TanStack Query hooks
+  const { data: users, isLoading, error } = useUsers();
+  
+  // Local state for UI
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [stats, setStats] = useState<UserStats>({ total: 0, customers: 0, retailers: 0, admins: 0 });
-  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [alert, setAlert] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  useEffect(() => {
     filterUsers();
   }, [users, searchTerm, roleFilter]);
 
-  const fetchUsers = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch('/api/admin/users');
-      const data = await response.json();
-      
-      if (data.success) {
-        setUsers(data.users);
-        setStats(data.stats);
-      }
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      setAlert({ type: 'error', message: 'Failed to fetch users' });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const filterUsers = () => {
+    if (!users) return;
+    
     let filtered = users;
 
     // Filter by search term
@@ -116,7 +104,10 @@ export default function UsersPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">User Management</h1>
-          <p className="text-muted-foreground">Loading users...</p>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <LoadingSpinner size="sm" />
+            <span>Loading users...</span>
+          </div>
         </div>
         <div className="grid gap-4">
           {[1, 2, 3].map((i) => (
@@ -127,6 +118,20 @@ export default function UsersPage() {
               </CardContent>
             </Card>
           ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">User Management</h1>
+          <div className="text-red-600">
+            <h2 className="text-lg font-medium">Error Loading Users</h2>
+            <p className="text-sm">Failed to load users. Please try again.</p>
+          </div>
         </div>
       </div>
     );
@@ -238,7 +243,7 @@ export default function UsersPage() {
                     {getRoleIcon(user.role)}
                     <h3 className="font-semibold">{user.name}</h3>
                     {getRoleBadge(user.role)}
-                    {user.isEmailVerified && (
+                    {user.emailVerified && (
                       <Badge variant="outline" className="text-green-600">
                         Verified
                       </Badge>

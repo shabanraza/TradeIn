@@ -36,7 +36,7 @@ export default function PhoneBrandsPage() {
   const fetchBrands = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/admin/phone-brands?' + Date.now());
+      const response = await fetch('/api/phone-brands?' + Date.now());
       const data = await response.json();
       
       if (data.success) {
@@ -76,7 +76,7 @@ export default function PhoneBrandsPage() {
         }
       }
 
-      const response = await fetch('/api/admin/phone-brands', {
+      const response = await fetch('/api/phone-brands', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

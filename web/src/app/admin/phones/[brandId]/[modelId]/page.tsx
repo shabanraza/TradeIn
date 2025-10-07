@@ -64,7 +64,7 @@ export default function ModelDetailPage({ params }: { params: { brandId: string;
       setIsLoading(true);
       
       // Fetch brand details
-      const brandResponse = await fetch('/api/admin/phone-brands');
+      const brandResponse = await fetch('/api/phone-brands');
       const brandData = await brandResponse.json();
       
       if (brandData.success) {
@@ -78,7 +78,7 @@ export default function ModelDetailPage({ params }: { params: { brandId: string;
       }
 
       // Fetch model details
-      const modelResponse = await fetch(`/api/admin/phone-models?brandId=${params.brandId}`);
+      const modelResponse = await fetch(`/api/phone-models?brandId=${params.brandId}`);
       const modelData = await modelResponse.json();
       
       if (modelData.success) {
@@ -92,7 +92,7 @@ export default function ModelDetailPage({ params }: { params: { brandId: string;
       }
 
       // Fetch variants for this model
-      const variantsResponse = await fetch(`/api/admin/phone-variants?modelId=${params.modelId}`);
+      const variantsResponse = await fetch(`/api/phone-variants?modelId=${params.modelId}`);
       const variantsData = await variantsResponse.json();
       
       if (variantsData.success) {
@@ -110,7 +110,7 @@ export default function ModelDetailPage({ params }: { params: { brandId: string;
 
   const handleCreateVariant = async () => {
     try {
-      const response = await fetch('/api/admin/phone-variants', {
+      const response = await fetch('/api/phone-variants', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -153,7 +153,7 @@ export default function ModelDetailPage({ params }: { params: { brandId: string;
     if (!editingVariant) return;
 
     try {
-      const response = await fetch('/api/admin/phone-variants', {
+      const response = await fetch('/api/phone-variants', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -189,7 +189,7 @@ export default function ModelDetailPage({ params }: { params: { brandId: string;
     }
 
     try {
-      const response = await fetch(`/api/admin/phone-variants?id=${variantId}`, {
+      const response = await fetch(`/api/phone-variants?id=${variantId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' }
       });

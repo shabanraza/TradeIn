@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { PWARegister } from "@/components/pwa-register";
+import { AggressiveCacheBuster } from "@/components/aggressive-cache-buster";
+import { DevCacheClear } from "@/components/dev-cache-clear";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -30,6 +32,11 @@ export const metadata: Metadata = {
     icon: "/icons/icon-192x192.png",
     apple: "/icons/icon-192x192.png",
   },
+  other: {
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0',
+  },
 };
 
 export default function RootLayout({
@@ -39,6 +46,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <meta httpEquiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta httpEquiv="Pragma" content="no-cache" />
+        <meta httpEquiv="Expires" content="0" />
+        <meta name="cache-control" content="no-cache" />
+        <meta name="expires" content="0" />
+        <meta name="pragma" content="no-cache" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         style={{
@@ -48,6 +63,8 @@ export default function RootLayout({
         suppressHydrationWarning={true}
       >
         <Providers>
+          <AggressiveCacheBuster />
+          <DevCacheClear />
           {children}
           <PWARegister />
         </Providers>

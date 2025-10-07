@@ -16,7 +16,7 @@ import {
   MessageCircle, 
   MapPin, 
   Calendar, 
-  DollarSign, 
+  IndianRupee, 
   Eye, 
   CheckCircle, 
   XCircle, 
@@ -234,7 +234,7 @@ export default function RetailerLeadsPage() {
                 </div>
                 {lead.estimatedValue && (
                   <div className="flex items-center gap-2 text-sm">
-                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    <IndianRupee className="h-4 w-4 text-muted-foreground" />
                     <span>₹{lead.estimatedValue.toLocaleString()}</span>
                   </div>
                 )}

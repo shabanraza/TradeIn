@@ -295,11 +295,15 @@ export const leads = pgTable('leads', {
   retailerNotes: text('retailerNotes'),
   // New fields for the form (using snake_case to match existing columns)
   phoneAge: text('phone_age'),
+  modelName: text('model_name'),
   hasBill: boolean('has_bill').default(false),
   billImage: text('bill_image'),
   hasBox: boolean('has_box').default(false),
   screenReplacement: text('screen_replacement'),
+  battery: text('battery'),
   batteryPercentage: text('battery_percentage'),
+  phoneImages: json('phone_images').$type<string[]>(),
+  city: text('city'),
   createdAt: timestamp('createdAt', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updatedAt', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
 });

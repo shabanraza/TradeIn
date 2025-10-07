@@ -40,7 +40,7 @@ export default function PhoneVariantsPage() {
   const fetchVariants = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/admin/phone-variants');
+      const response = await fetch('/api/phone-variants');
       const data = await response.json();
       
       if (data.success) {

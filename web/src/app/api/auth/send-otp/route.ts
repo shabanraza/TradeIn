@@ -14,16 +14,20 @@ export async function POST(request: NextRequest) {
 
     // Generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes from now
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now (more generous)
+    
+    console.log('📧 Sending OTP to:', email);
+    console.log('🕐 Expires at:', expiresAt.toISOString());
+    console.log('🕐 Current time:', new Date().toISOString());
 
     // Delete any existing OTP for this email
     await db.delete(otpCodes).where(eq(otpCodes.email, email));
 
-    // Insert new OTP
+    // Insert new OTP with correct column names
     await db.insert(otpCodes).values({
       email,
       code: otp,
-      expiresAt,
+      expiresAt: expiresAt,
       isUsed: false,
     });
 

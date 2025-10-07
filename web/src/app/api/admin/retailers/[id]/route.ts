@@ -5,11 +5,11 @@ import { eq } from 'drizzle-orm';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { isRetailerApproved, businessName, businessAddress, phone, location } = await request.json();
-    const retailerId = params.id;
+    const { id: retailerId } = await params;
 
     console.log('Updating retailer:', retailerId, { isRetailerApproved });
 
@@ -66,10 +66,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const retailerId = params.id;
+    const { id: retailerId } = await params;
 
     console.log('Deleting retailer:', retailerId);
 

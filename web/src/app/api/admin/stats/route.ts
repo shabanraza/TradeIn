@@ -9,10 +9,10 @@ export async function GET(request: NextRequest) {
 
     // Get user counts by role
     const allUsers = await db.select().from(users);
-    const customers = allUsers.filter(user => user.role === 'customer');
-    const retailers = allUsers.filter(user => user.role === 'retailer');
-    const pendingRetailers = retailers.filter(user => !user.isRetailerApproved);
-    const activeRetailers = retailers.filter(user => user.isRetailerApproved);
+    const customers = allUsers.filter((user: any) => user.role === 'customer');
+    const retailers = allUsers.filter((user: any) => user.role === 'retailer');
+    const pendingRetailers = retailers.filter((user: any) => !user.isRetailerApproved);
+    const activeRetailers = retailers.filter((user: any) => user.isRetailerApproved);
 
     // Get phone database counts
     const brands = await db.select().from(phoneBrands);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signIn } from '@/lib/auth/client';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -8,85 +8,110 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, Mail } from 'lucide-react';
+import { Loader2, Mail, MapPin } from 'lucide-react';
+import { useSendOTP, useVerifyOTP } from '@/hooks/api/useOtp';
+import { useLocationDetection } from '@/hooks/use-location-detection';
+import { useUpdateLocation } from '@/hooks/api/useUpdateLocation';
 
 export default function SignInPage() {
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const router = useRouter();
 
+  // TanStack Query mutations
+  const sendOTPMutation = useSendOTP();
+  const verifyOTPMutation = useVerifyOTP();
+  const updateLocationMutation = useUpdateLocation();
+
+  // Location detection
+  const { 
+    isDetecting, 
+    location, 
+    error: locationError, 
+    detectLocation 
+  } = useLocationDetection();
+
+  // Add a state to disable location detection if it's causing issues
+  const [locationDetectionEnabled, setLocationDetectionEnabled] = useState(false);
+
+  // Auto-detect location on component mount
+  useEffect(() => {
+    if (!locationDetectionEnabled) return;
+    
+    const autoDetectLocation = async () => {
+      try {
+        const result = await detectLocation();
+        if (result) {
+          console.log('Location detected during sign-in:', result.city);
+        }
+      } catch (error) {
+        console.warn('Location detection failed during sign-in:', error);
+        // Disable location detection if it keeps failing
+        setLocationDetectionEnabled(false);
+      }
+    };
+    autoDetectLocation();
+  }, [detectLocation, locationDetectionEnabled]);
+
+
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setError('');
 
-    try {
-      const response = await fetch('/api/auth/send-otp', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await response.json();
-
-      if (data.error) {
-        setError(data.error);
-      } else {
+    sendOTPMutation.mutate(email, {
+      onSuccess: () => {
         setOtpSent(true);
-      }
-    } catch (error) {
-      setError('An error occurred. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
+      },
+      onError: (error: Error) => {
+        setError(error.message);
+      },
+    });
   };
 
   const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setError('');
 
-    try {
-      const response = await fetch('/api/auth/verify-otp', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, otp }),
-      });
-
-      const data = await response.json();
-
-      if (data.error) {
-        setError(data.error);
-      } else {
+    verifyOTPMutation.mutate({ email, otp }, {
+      onSuccess: async () => {
+        // Save location if detected
+        if (location) {
+          try {
+            await updateLocationMutation.mutateAsync({ location });
+            console.log('Location saved for user:', location);
+          } catch (error) {
+            console.error('Failed to save location:', error);
+            // Don't block sign-in if location save fails
+          }
+        }
+        
         // Redirect to homepage after successful verification
-        // Force a page refresh to ensure session is loaded
+        // Session provider will handle pending lead data
         window.location.href = '/';
-      }
-    } catch (error) {
-      setError('An error occurred. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
+      },
+      onError: (error: Error) => {
+        setError(error.message);
+      },
+    });
   };
 
   const handleGoogleSignIn = async () => {
-    setIsLoading(true);
     setError('');
     try {
       await signIn.social({
         provider: 'google',
         callbackURL: '/',
       });
+      
+      // Save location if detected (this will happen after redirect)
+      if (location) {
+        // We'll save this in the session provider or after redirect
+        localStorage.setItem('pendingLocation', location);
+      }
     } catch (error) {
       setError('Failed to sign in with Google. Please try again.');
-      setIsLoading(false);
     }
   };
 
@@ -104,6 +129,28 @@ export default function SignInPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Location Detection Status */}
+          {locationDetectionEnabled && isDetecting && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+              <span className="text-sm text-blue-600">Detecting your location...</span>
+            </div>
+          )}
+          
+          {locationDetectionEnabled && location && !isDetecting && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-green-600" />
+              <span className="text-sm text-green-600">Location detected: {location}</span>
+            </div>
+          )}
+          
+          {locationDetectionEnabled && locationError && (
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-orange-600" />
+              <span className="text-sm text-orange-600">{locationError}</span>
+            </div>
+          )}
+
           {!otpSent ? (
             /* Email Input */
             <form onSubmit={handleSendOTP} className="space-y-4">
@@ -116,7 +163,7 @@ export default function SignInPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  disabled={isLoading}
+                  disabled={sendOTPMutation.isPending}
                 />
               </div>
 
@@ -126,8 +173,8 @@ export default function SignInPage() {
                 </div>
               )}
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? (
+              <Button type="submit" className="w-full" disabled={sendOTPMutation.isPending}>
+                {sendOTPMutation.isPending ? (
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 ) : (
                   <Mail className="w-4 h-4 mr-2" />
@@ -154,7 +201,7 @@ export default function SignInPage() {
                   maxLength={6}
                   className="text-center text-lg tracking-widest"
                   required
-                  disabled={isLoading}
+                  disabled={verifyOTPMutation.isPending}
                 />
               </div>
 
@@ -164,8 +211,8 @@ export default function SignInPage() {
                 </div>
               )}
 
-              <Button type="submit" className="w-full" disabled={isLoading || otp.length !== 6}>
-                {isLoading ? (
+              <Button type="submit" className="w-full" disabled={verifyOTPMutation.isPending || otp.length !== 6}>
+                {verifyOTPMutation.isPending ? (
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 ) : (
                   <Mail className="w-4 h-4 mr-2" />
@@ -202,7 +249,7 @@ export default function SignInPage() {
           <Button
             type="button"
             onClick={handleGoogleSignIn}
-            disabled={isLoading}
+            disabled={sendOTPMutation.isPending || verifyOTPMutation.isPending}
             className="w-full"
             variant="outline"
           >

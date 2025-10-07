@@ -71,7 +71,7 @@ export default function BrandDetailPage({ params }: { params: { brandId: string 
       setIsLoading(true);
       
       // Fetch brand details
-      const brandResponse = await fetch('/api/admin/phone-brands');
+      const brandResponse = await fetch('/api/phone-brands');
       const brandData = await brandResponse.json();
       
       if (brandData.success) {
@@ -85,7 +85,7 @@ export default function BrandDetailPage({ params }: { params: { brandId: string 
       }
 
       // Fetch models for this brand
-      const modelsResponse = await fetch(`/api/admin/phone-models?brandId=${params.brandId}`);
+      const modelsResponse = await fetch(`/api/phone-models?brandId=${params.brandId}`);
       const modelsData = await modelsResponse.json();
       
       if (modelsData.success) {
@@ -126,7 +126,7 @@ export default function BrandDetailPage({ params }: { params: { brandId: string 
       }
 
       // Create the model first
-      const modelResponse = await fetch('/api/admin/phone-models', {
+      const modelResponse = await fetch('/api/phone-models', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -146,7 +146,7 @@ export default function BrandDetailPage({ params }: { params: { brandId: string 
 
       // If user wants to create a variant too
       if (modelForm.createVariant && modelForm.variantName) {
-        const variantResponse = await fetch('/api/admin/phone-variants', {
+        const variantResponse = await fetch('/api/phone-variants', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -228,7 +228,7 @@ export default function BrandDetailPage({ params }: { params: { brandId: string 
         }
       }
 
-      const response = await fetch('/api/admin/phone-models', {
+      const response = await fetch('/api/phone-models', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -273,7 +273,7 @@ export default function BrandDetailPage({ params }: { params: { brandId: string 
     }
 
     try {
-      const response = await fetch(`/api/admin/phone-models?id=${modelId}`, {
+      const response = await fetch(`/api/phone-models?id=${modelId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' }
       });

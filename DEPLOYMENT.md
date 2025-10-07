@@ -56,6 +56,6 @@ SMTP_PASS=your-app-password
 
 ## Build Configuration:
 - Framework: Next.js
-- Build Command: `cd web && npm run build`
+- Build Command: `cd web && pnpm run build`
 - Output Directory: `web/.next`
-- Install Command: `cd web && npm install`
+- Install Command: `pnpm install`

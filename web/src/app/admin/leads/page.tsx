@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,16 +21,35 @@ import {
   Mail,
   MapPin,
   Calendar,
-  DollarSign
+  IndianRupee
 } from 'lucide-react';
+
+// TanStack Query hooks
+import { useLeads } from '@oldsellerapp/shared';
+import { LoadingSpinner } from '@/components/common/loading-spinner';
+import { ErrorBoundary } from '@/components/common/error-boundary';
 
 interface Lead {
   id: string;
   customerId: string;
-  retailerId: string;
-  phoneBrand: string;
-  phoneModel: string;
-  phoneVariant?: string;
+  retailerId: string | null;
+  phoneBrand?: {
+    id: string;
+    name: string;
+    icon: string;
+  };
+  phoneModel?: {
+    id: string;
+    name: string;
+    image: string;
+  };
+  phoneVariant?: {
+    id: string;
+    name: string;
+    storage: string;
+    color: string;
+    price: number | null;
+  };
   condition: string;
   storage?: string;
   color?: string;
@@ -40,11 +59,11 @@ interface Lead {
   customerName: string;
   customerEmail: string;
   customerPhone: string;
-  customerLocation: string;
+  customerAddress?: string;
   preferredContactMethod: string;
   preferredContactTime?: string;
   estimatedValue?: number;
-  status: string;
+  status: 'pending' | 'approved' | 'rejected' | 'completed';
   notes?: string;
   retailerNotes?: string;
   createdAt: string;
@@ -63,42 +82,26 @@ interface RetailerStats {
 }
 
 export default function AdminLeadsPage() {
-  const [leads, setLeads] = useState<Lead[]>([]);
+  // TanStack Query hooks
+  const { data: leads, isLoading, error } = useLeads();
+  
+  // Local state for UI
   const [retailerStats, setRetailerStats] = useState<RetailerStats[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [alert, setAlert] = useState<{ type: 'success' | 'error', message: string } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [retailerFilter, setRetailerFilter] = useState<string>('all');
 
-  useEffect(() => {
-    fetchLeads();
-  }, []);
 
-  const fetchLeads = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch('/api/leads');
-      const data = await response.json();
-      
-      if (data.success) {
-        setLeads(data.leads);
-        calculateRetailerStats(data.leads);
-      } else {
-        setAlert({ type: 'error', message: 'Failed to load leads' });
-      }
-    } catch (error) {
-      console.error('Error fetching leads:', error);
-      setAlert({ type: 'error', message: 'Failed to fetch leads' });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
-  const calculateRetailerStats = (leadsData: Lead[]) => {
+  const calculateRetailerStats = () => {
+    if (!leads) return;
+    
     const statsMap = new Map<string, RetailerStats>();
     
-    leadsData.forEach(lead => {
+    leads.forEach(lead => {
+      if (!lead.retailerId) return; // Skip leads without retailer
+      
       if (!statsMap.has(lead.retailerId)) {
         statsMap.set(lead.retailerId, {
           retailerId: lead.retailerId,
@@ -116,16 +119,13 @@ export default function AdminLeadsPage() {
       stats.totalLeads++;
       
       switch (lead.status) {
-        case 'new':
+        case 'pending':
           stats.newLeads++;
           break;
-        case 'contacted':
+        case 'approved':
           stats.contactedLeads++;
           break;
-        case 'interested':
-          stats.interestedLeads++;
-          break;
-        case 'closed':
+        case 'completed':
           stats.closedLeads++;
           break;
         case 'rejected':
@@ -136,6 +136,11 @@ export default function AdminLeadsPage() {
     
     setRetailerStats(Array.from(statsMap.values()));
   };
+
+  // Update stats when leads data changes
+  useEffect(() => {
+    calculateRetailerStats();
+  }, [leads]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -159,23 +164,38 @@ export default function AdminLeadsPage() {
     }
   };
 
-  const filteredLeads = leads.filter(lead => {
+  const filteredLeads = leads?.filter(lead => {
     const matchesSearch = searchTerm === '' || 
       lead.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lead.phoneBrand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lead.phoneModel.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      lead.phoneBrand?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      lead.phoneModel?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       lead.customerEmail.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || lead.status === statusFilter;
     const matchesRetailer = retailerFilter === 'all' || lead.retailerId === retailerFilter;
     
     return matchesSearch && matchesStatus && matchesRetailer;
-  });
+  }) || [];
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+        <LoadingSpinner size="lg" />
+        <span className="ml-2 text-muted-foreground">Loading leads...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <div className="text-red-600 mb-4">
+          <h3 className="text-lg font-medium">Error Loading Leads</h3>
+          <p className="text-sm">Failed to load leads. Please try again.</p>
+        </div>
+        <Button onClick={() => window.location.reload()}>
+          Retry
+        </Button>
       </div>
     );
   }
@@ -305,7 +325,7 @@ export default function AdminLeadsPage() {
                         <div>
                           <h3 className="font-semibold">{lead.customerName}</h3>
                           <p className="text-sm text-muted-foreground">
-                            {lead.phoneBrand} {lead.phoneModel} {lead.phoneVariant}
+                            {lead.phoneBrand?.name} {lead.phoneModel?.name} {lead.phoneVariant?.name}
                           </p>
                         </div>
                         <Badge className={getStatusColor(lead.status)}>
@@ -325,7 +345,7 @@ export default function AdminLeadsPage() {
                         </div>
                         <div className="flex items-center gap-2">
                           <MapPin className="h-4 w-4 text-muted-foreground" />
-                          <span>{lead.customerLocation}</span>
+                          <span>{lead.customerAddress || 'N/A'}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -334,7 +354,7 @@ export default function AdminLeadsPage() {
                       </div>
                       
                       <div className="mt-2 text-sm text-muted-foreground">
-                        <span>Retailer: {lead.retailerId.slice(0, 8)}</span>
+                        <span>Retailer: {lead.retailerId ? lead.retailerId.slice(0, 8) : 'Unassigned'}</span>
                         <span className="mx-2">•</span>
                         <span>Condition: {lead.condition}</span>
                         {lead.estimatedValue && (

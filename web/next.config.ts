@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Output configuration
+  output: 'standalone',
+  
   // Image configuration
   images: {
     remotePatterns: [
@@ -37,7 +40,7 @@ const nextConfig: NextConfig = {
     ],
   },
   
-  // PWA Configuration
+  // Headers configuration
   async headers() {
     return [
       {
@@ -58,31 +61,66 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        source: '/sell',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+          {
+            key: 'Expires',
+            value: '0',
+          },
+        ],
+      },
+      {
+        source: '/sell/form',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+          {
+            key: 'Expires',
+            value: '0',
+          },
+        ],
+      },
+      {
+        source: '/((?!api|_next/static|_next/image|favicon.ico).*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+          {
+            key: 'Expires',
+            value: '0',
+          },
+        ],
+      },
     ];
   },
   
-  // Enable experimental features for PWA
-  experimental: {
-    // Enable service worker support
-    serverComponentsExternalPackages: [],
-  },
-  
-  // Optimize for PWA
+  // Performance optimizations
   compress: true,
   poweredByHeader: false,
   
-  // Webpack configuration for service worker
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        net: false,
-        tls: false,
-      };
-    }
-    return config;
-  },
+  // External packages
+  serverExternalPackages: [],
 };
 
 export default nextConfig;
