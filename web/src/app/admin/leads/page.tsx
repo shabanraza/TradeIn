@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 
 // TanStack Query hooks
-import { useLeads } from '@oldsellerapp/shared';
+import { useLeads } from '../../../../shared/hooks';
 import { LoadingSpinner } from '@/components/common/loading-spinner';
 import { ErrorBoundary } from '@/components/common/error-boundary';
 

@@ -7,7 +7,7 @@ import { Users, Store, Smartphone, ShoppingCart, TrendingUp, AlertCircle } from 
 import Link from 'next/link';
 
 // TanStack Query hooks
-import { usePhoneBrands, useLeads } from '@oldsellerapp/shared';
+import { usePhoneBrands, useLeads } from '../../../shared/hooks';
 import { useRetailers } from '@/hooks/api/useRetailers';
 import { useUsers } from '@/hooks/api/useUsers';
 import { useAdminStats } from '@/hooks/api/useAdminStats';

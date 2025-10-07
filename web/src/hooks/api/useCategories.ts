@@ -1,4 +1,4 @@
-import { useCategories as useSharedCategories, Category } from '@oldsellerapp/shared';
+import { useCategories as useSharedCategories, Category } from '../../../shared/hooks/useCategories';
 
 // Re-export types for convenience
 export type { Category };

@@ -1,4 +1,4 @@
-import { useProducts as useSharedProducts, UseProductsOptions, Product } from '@oldsellerapp/shared';
+import { useProducts as useSharedProducts, UseProductsOptions, Product } from '../../../shared/hooks/useProducts';
 
 // Re-export types for convenience
 export type { Product, UseProductsOptions };
