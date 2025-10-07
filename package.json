@@ -1,0 +1,18 @@
+{
+  "name": "oldsellerapp",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "web",
+    "shared",
+    "mobile"
+  ],
+  "scripts": {
+    "build": "pnpm run build --filter=web",
+    "dev": "pnpm run dev --filter=web",
+    "install": "pnpm install"
+  },
+  "devDependencies": {
+    "pnpm": "^8.0.0"
+  }
+}
