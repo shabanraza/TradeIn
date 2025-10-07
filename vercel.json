@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "cd web && npm install && npm run build",
+  "buildCommand": "cd web && pnpm install && pnpm run build",
   "outputDirectory": "web/.next",
-  "installCommand": "cd web && npm install",
+  "installCommand": "cd web && pnpm install",
   "framework": "nextjs",
   "functions": {
     "web/src/app/api/**/*.ts": {
