@@ -1,0 +1,9 @@
+mobile/
+node_modules/
+.git/
+.cursor/
+doc/
+*.md
+pnpm-lock.yaml
+package.json
+pnpm-workspace.yaml
