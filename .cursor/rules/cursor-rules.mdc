@@ -1,0 +1,21 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+use pnpm always
+Always use shadcn ui component from mcp server 
+Use next js documentation for any change
+
+if need any component then first check component in shadcn ui library if not available then install in from shadcn Ui ,still if you didn't find then you create one 
+
+keep the projact structure moduler and reusable 
+
+please dont run pnpn dev by your self ask me always i will run it manually
+
+use Next JS image component always 
+dont run app yourself alwasy user to run manaully
+
+use compact size of element,component,desing  and spacing ,dont make it bulky
+alwasy use rupees symbol
+alwasy use power sell
