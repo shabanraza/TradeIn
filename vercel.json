@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "pnpm install && pnpm run build --filter=web",
+  "buildCommand": "cd web && pnpm install && pnpm run build",
   "outputDirectory": "web/.next",
-  "installCommand": "pnpm install",
+  "installCommand": "cd web && pnpm install",
   "framework": "nextjs",
   "functions": {
     "web/src/app/api/**/*.ts": {
