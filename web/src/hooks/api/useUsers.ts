@@ -3,8 +3,7 @@ import { queryKeys } from '@/lib/query-client'
 import { 
   fetchUsers, 
   fetchUsersByRole, 
-  updateUserRole,
-  type User 
+  updateUserRole
 } from '@/lib/api/admin-api'
 
 // Hook to fetch all users

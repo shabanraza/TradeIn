@@ -131,7 +131,7 @@ export const createLead = async (leadData: CreateLeadData, baseURL: string = '')
   }
   
   const data = await response.json() as { lead?: Lead } | Lead
-  return data.lead || data
+  return 'lead' in data ? (data.lead as Lead) : (data as Lead)
 }
 
 // Update a lead

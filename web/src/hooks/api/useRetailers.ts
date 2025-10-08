@@ -3,8 +3,7 @@ import { queryKeys } from '@/lib/query-client'
 import { 
   fetchRetailers, 
   fetchRetailer, 
-  updateRetailerApproval,
-  type Retailer 
+  updateRetailerApproval
 } from '@/lib/api/admin-api'
 
 // Hook to fetch all retailers

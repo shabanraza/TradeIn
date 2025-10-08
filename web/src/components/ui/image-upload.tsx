@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Upload, X, Image as ImageIcon, FileImage, CheckCircle } from 'lucide-react';
+import { Upload, X, Image as ImageIcon, FileImage } from 'lucide-react';
 
 interface ImageUploadProps {
   onImageSelect: (file: File) => void;

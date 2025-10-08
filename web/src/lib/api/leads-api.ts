@@ -131,7 +131,7 @@ export const fetchLead = async (id: string): Promise<Lead> => {
 }
 
 // Create a new lead
-export const createLead = async (leadData: CreateLeadData): Promise<any> => {
+export const createLead = async (leadData: CreateLeadData): Promise<Lead> => {
   const response = await fetch('/api/leads', {
     method: 'POST',
     headers: {
