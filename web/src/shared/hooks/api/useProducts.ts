@@ -66,7 +66,9 @@ export const useProducts = (options?: UseProductsOptions, baseURL?: string) => {
       if (options?.search) params.append('search', options.search);
       if (options?.limit) params.append('limit', options.limit.toString());
       
-      const url = `${apiBaseUrl}/api/products${params.toString() ? `?${params.toString()}` : ''}`;
+      // Handle both absolute URLs (with domain) and relative URLs
+      const basePath = apiBaseUrl.endsWith('/api') ? apiBaseUrl : `${apiBaseUrl}/api`;
+      const url = `${basePath}/products${params.toString() ? `?${params.toString()}` : ''}`;
       
       const response = await fetch(url);
       

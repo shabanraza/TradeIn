@@ -11,110 +11,30 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Label } from '@/components/ui/label';
+import { useProducts } from '@/hooks/api/useProducts';
+import { Product as ApiProduct } from '@/hooks/api/useProducts';
 
-// Mock data for demonstration
-const mockProducts = [
-  {
-    id: '1',
-    title: 'iPhone 14 Pro Max',
-    description: 'Excellent condition, 256GB, Space Black',
-    price: 899,
-    originalPrice: 1099,
-    condition: 'excellent' as const,
-    images: ['/api/placeholder/300/200'],
-    views: 156,
-    isSold: false,
-    isNew: true,
-    isRefurbished: false,
-    createdAt: new Date('2024-01-15'),
-    retailer: {
-      id: 'retailer-1',
-      name: 'John Smith',
-      businessName: 'TechStore NYC',
-      role: 'retailer' as const,
-    }
-  },
-  {
-    id: '2',
-    title: 'Samsung Galaxy S23 Ultra',
-    description: 'Like new, 512GB, Phantom Black',
-    price: 799,
-    originalPrice: 999,
-    condition: 'good' as const,
-    images: ['/api/placeholder/300/200'],
-    views: 89,
-    isSold: false,
-    isNew: false,
-    isRefurbished: true,
-    createdAt: new Date('2024-01-10'),
-    retailer: {
-      id: 'retailer-2',
-      name: 'Sarah Johnson',
-      businessName: 'Mobile Hub LA',
-      role: 'retailer' as const,
-    }
-  },
-  {
-    id: '3',
-    title: 'Google Pixel 7 Pro',
-    description: 'Good condition, 128GB, Obsidian',
-    price: 599,
-    originalPrice: 799,
-    condition: 'good' as const,
-    images: ['/api/placeholder/300/200'],
-    views: 67,
-    isSold: false,
-    isNew: true,
-    isRefurbished: false,
-    createdAt: new Date('2024-01-08'),
-    retailer: {
-      id: 'retailer-3',
-      name: 'Mike Chen',
-      businessName: 'Pixel Store Chicago',
-      role: 'retailer' as const,
-    }
-  },
-  {
-    id: '4',
-    title: 'OnePlus 11',
-    description: 'Excellent condition, 256GB, Titan Black',
-    price: 499,
-    originalPrice: 699,
-    condition: 'excellent' as const,
-    images: ['/api/placeholder/300/200'],
-    views: 43,
-    isSold: false,
-    isNew: false,
-    isRefurbished: true,
-    createdAt: new Date('2024-01-05'),
-    retailer: {
-      id: 'retailer-4',
-      name: 'Alex Rodriguez',
-      businessName: 'OnePlus Miami',
-      role: 'retailer' as const,
-    }
-  },
-  {
-    id: '5',
-    title: 'iPhone 13 Pro',
-    description: 'Excellent condition, 128GB, Sierra Blue',
-    price: 699,
-    originalPrice: 899,
-    condition: 'excellent' as const,
-    images: ['/api/placeholder/300/200'],
-    views: 78,
-    isSold: false,
-    isNew: true,
-    isRefurbished: false,
-    createdAt: new Date('2024-01-03'),
-    retailer: {
-      id: 'retailer-5',
-      name: 'David Kim',
-      businessName: 'iPhone Store NYC',
-      role: 'retailer' as const,
-    }
+// Helper function to transform API product to display format
+const transformProduct = (apiProduct: ApiProduct) => ({
+  id: apiProduct.id,
+  title: apiProduct.title || apiProduct.name,
+  description: apiProduct.description || '',
+  price: parseFloat(apiProduct.price),
+  originalPrice: apiProduct.originalPrice ? parseFloat(apiProduct.originalPrice) : undefined,
+  condition: apiProduct.condition,
+  images: apiProduct.images || [],
+  views: 0, // API doesn't provide views yet
+  isSold: !apiProduct.isActive,
+  isNew: apiProduct.phoneType === 'new',
+  isRefurbished: apiProduct.phoneType === 'refurbished',
+  createdAt: new Date(apiProduct.createdAt),
+  retailer: {
+    id: apiProduct.retailerId,
+    name: apiProduct.retailer?.name || 'Unknown',
+    businessName: apiProduct.retailer?.businessName || 'Unknown Business',
+    role: 'retailer' as const,
   }
-];
+});
 
 export default function ProductsPage() {
   const [filters, setFilters] = useState({
@@ -130,7 +50,17 @@ export default function ProductsPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
 
-  const filteredProducts = mockProducts.filter(product => {
+  // Use real API data
+  const { data: productsData, isLoading, error } = useProducts({
+    categoryId: filters.category || undefined,
+    limit: 50
+  });
+
+  // Transform API data to display format
+  const apiProducts = productsData?.products?.map(transformProduct) || [];
+  const products = apiProducts;
+
+  const filteredProducts = products.filter(product => {
     if (filters.condition && filters.condition !== 'all' && product.condition !== filters.condition) {
       return false;
     }
@@ -147,8 +77,8 @@ export default function ProductsPage() {
     }
     if (filters.priceRange && filters.priceRange !== 'all') {
       const [min, max] = filters.priceRange.split('-').map(Number);
-      if (filters.priceRange === '1500+') {
-        if (product.price < 1500) return false;
+      if (filters.priceRange === '100000+') {
+        if (product.price < 100000) return false;
       } else if (max) {
         if (product.price < min || product.price > max) return false;
       }
@@ -156,7 +86,7 @@ export default function ProductsPage() {
     return true;
   });
 
-  const sortProducts = (products: typeof mockProducts) => {
+  const sortProducts = (products: any[]) => {
     switch (filters.sortBy) {
       case 'price_low':
         return [...products].sort((a, b) => a.price - b.price);
@@ -171,6 +101,42 @@ export default function ProductsPage() {
   };
 
   const sortedProducts = sortProducts(filteredProducts);
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading products...</p>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="text-6xl mb-4">❌</div>
+            <h3 className="text-lg font-medium text-foreground mb-2">
+              Failed to load products
+            </h3>
+            <p className="text-muted-foreground mb-4">
+              {error instanceof Error ? error.message : 'Something went wrong'}
+            </p>
+            <Button onClick={() => window.location.reload()}>
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
@@ -284,11 +250,11 @@ export default function ProductsPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Prices</SelectItem>
-                      <SelectItem value="0-200">Under $200</SelectItem>
-                      <SelectItem value="200-500">$200 - $500</SelectItem>
-                      <SelectItem value="500-1000">$500 - $1000</SelectItem>
-                      <SelectItem value="1000-1500">$1000 - $1500</SelectItem>
-                      <SelectItem value="1500+">Over $1500</SelectItem>
+                      <SelectItem value="0-10000">Under ₹10,000</SelectItem>
+                      <SelectItem value="10000-25000">₹10,000 - ₹25,000</SelectItem>
+                      <SelectItem value="25000-50000">₹25,000 - ₹50,000</SelectItem>
+                      <SelectItem value="50000-100000">₹50,000 - ₹1,00,000</SelectItem>
+                      <SelectItem value="100000+">Over ₹1,00,000</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -482,9 +448,9 @@ interface Product {
 
 function ProductCard({ product, viewMode }: { product: Product; viewMode: 'grid' | 'list' }) {
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
     }).format(price);
   };
 

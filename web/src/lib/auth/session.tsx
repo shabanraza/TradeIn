@@ -137,7 +137,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       
       // Use existing session API that now handles both Google OAuth and Email OTP
       try {
-        const sessionResponse = await fetch('/api/auth/session?' + Date.now(), {
+        const sessionResponse = await fetch('/api/auth/session', {
           credentials: 'include',
           cache: 'no-store',
           headers: {
@@ -348,7 +348,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     
     // Check Better Auth session
     try {
-      const betterAuthResponse = await fetch('/api/auth/better-auth-session?' + Date.now());
+      const betterAuthResponse = await fetch('/api/auth/better-auth-session');
       const betterAuthData = await betterAuthResponse.json();
       console.log('Better Auth session:', betterAuthData);
     } catch (error) {
@@ -357,7 +357,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     
     // Check custom session
     try {
-      const customResponse = await fetch('/api/auth/session?' + Date.now());
+      const customResponse = await fetch('/api/auth/session');
       const customData = await customResponse.json();
       console.log('Custom session:', customData);
     } catch (error) {

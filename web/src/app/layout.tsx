@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { PWARegister } from "@/components/pwa-register";
-import { AggressiveCacheBuster } from "@/components/aggressive-cache-buster";
 import { DevCacheClear } from "@/components/dev-cache-clear";
 import "./globals.css";
 
@@ -63,7 +62,6 @@ export default function RootLayout({
         suppressHydrationWarning={true}
       >
         <Providers>
-          <AggressiveCacheBuster />
           <DevCacheClear />
           {children}
           <PWARegister />

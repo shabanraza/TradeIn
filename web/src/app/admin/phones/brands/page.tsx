@@ -36,7 +36,7 @@ export default function PhoneBrandsPage() {
   const fetchBrands = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/phone-brands?' + Date.now());
+      const response = await fetch('/api/phone-brands');
       const data = await response.json();
       
       if (data.success) {

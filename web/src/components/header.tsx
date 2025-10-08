@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, LogOut, List, Settings, MapPin, ChevronDown } from 'lucide-react';
+import { User, LogOut, List, Settings, MapPin } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Header() {
@@ -25,14 +25,8 @@ export default function Header() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2 group">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-lg blur-sm group-hover:blur-md transition-all duration-300"></div>
-              <div className="relative bg-white/10 dark:bg-gray-800/10 backdrop-blur-sm rounded-lg p-1.5 border border-white/20 dark:border-gray-700/20">
-                <div className="text-lg">📱</div>
-              </div>
-            </div>
-            <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent group-hover:from-blue-700 group-hover:to-purple-700 transition-all duration-300">
-              OldPhone Marketplace
+            <span className="text-lg font-bold text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-all duration-300">
+              Trade In
             </span>
           </Link>
 
@@ -87,52 +81,11 @@ export default function Header() {
 
     {/* User Actions */}
                   <div className="flex items-center space-x-2">
-                    {/* Location Display - Interactive dropdown */}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          className="hidden sm:flex items-center space-x-1.5 hover:bg-white/50 dark:hover:bg-gray-800/50 backdrop-blur-sm border border-transparent hover:border-white/20 dark:hover:border-gray-700/20 px-2.5 py-1.5 h-auto rounded-full transition-all duration-200"
-                        >
-                          <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {user?.location || 'Detecting location...'}
-                          </span>
-                          <ChevronDown className="w-3 h-3 text-gray-500 dark:text-gray-400" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="w-64 backdrop-blur-md bg-white/90 dark:bg-gray-900/90 border border-white/20 dark:border-gray-800/20 shadow-xl">
-                        <DropdownMenuLabel className="flex items-center space-x-2 text-gray-800 dark:text-gray-200">
-                          <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                          <span>Your Location</span>
-                        </DropdownMenuLabel>
-                        <DropdownMenuSeparator className="bg-gray-200/50 dark:bg-gray-700/50" />
-                        <DropdownMenuItem className="flex items-center space-x-2 hover:bg-white/50 dark:hover:bg-gray-800/50">
-                          <div className="w-2 h-2 bg-green-500 rounded-full shadow-sm"></div>
-                          <div className="flex flex-col">
-                            <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                              {user?.location || 'Location not detected'}
-                            </span>
-                            <span className="text-xs text-gray-600 dark:text-gray-400">
-                              {user?.location ? 'Auto-detected' : 'Click to detect location'}
-                            </span>
-                          </div>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator className="bg-gray-200/50 dark:bg-gray-700/50" />
-                        <DropdownMenuItem asChild>
-                          <Link href="/sell" className="flex items-center space-x-2 hover:bg-white/50 dark:hover:bg-gray-800/50">
-                            <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                            <span className="text-gray-800 dark:text-gray-200">Update Location</span>
-                          </Link>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                    
-                    {/* Mobile Location Display */}
-                    <div className="sm:hidden flex items-center space-x-1 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-full px-2 py-1 border border-white/20 dark:border-gray-700/20">
-                      <MapPin className="w-3 h-3 text-blue-600 dark:text-blue-400" />
-                      <span className="text-xs text-gray-700 dark:text-gray-300 truncate max-w-16">
-                        {user?.location || 'Location...'}
+                    {/* Location Display - Single, non-clickable */}
+                    <div className="flex items-center space-x-1.5 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-full px-3 py-1.5 border border-white/20 dark:border-gray-700/20">
+                      <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {user?.location || 'Mumbai'}
                       </span>
                     </div>
                     
@@ -204,18 +157,11 @@ export default function Header() {
                       </DropdownMenu>
             ) : (
                   <div className="flex items-center space-x-4">
-                    {/* Location Display for non-logged in users */}
-                    <div className="hidden sm:flex items-center space-x-2 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/20 dark:border-gray-700/20">
-                      <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Select Location
-                      </span>
-                    </div>
-                    
                     <Link href="/auth/signin">
                       <Button
                         size="sm"
-                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200 backdrop-blur-sm"
+                        variant="default"
+                        className="bg-gray-800 hover:bg-gray-900 dark:bg-gray-700 dark:hover:bg-gray-600 text-white border-0 transition-all duration-200"
                       >
                         Sign In
                       </Button>
