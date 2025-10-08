@@ -34,7 +34,7 @@ export default function Home() {
             className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto"
             style={{ color: 'var(--color-muted-foreground)' }}
           >
-            Buy and sell used phones with confidence. Quality guaranteed, prices you'll love.
+            Buy and sell used phones with confidence. Quality guaranteed, prices you&apos;ll love.
           </p>
           
           {/* CTA Buttons */}
@@ -78,7 +78,7 @@ export default function Home() {
               className="text-sm"
               style={{ color: 'var(--color-muted-foreground)' }}
             >
-              Find exactly what you're looking for with our advanced filters and search.
+              Find exactly what you&apos;re looking for with our advanced filters and search.
             </p>
           </div>
           

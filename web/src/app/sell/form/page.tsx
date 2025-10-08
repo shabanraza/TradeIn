@@ -335,12 +335,12 @@ export default function SellFormPage() {
                   <div className="col-span-2">
                     <FormControl>
                       <Input
-                        placeholder="e.g., iPhone 14, Samsung Galaxy S21 (Don't know? No problem!)"
+                        placeholder="e.g., iPhone 14, Samsung Galaxy S21 (Don&apos;t know? No problem!)"
                         {...field}
                         className="w-full h-10"
                       />
                     </FormControl>
-                    <p className="text-sm text-muted-foreground mt-1">Don't worry if you don't know - retailers will help you!</p>
+                    <p className="text-sm text-muted-foreground mt-1">Don&apos;t worry if you don&apos;t know - retailers will help you!</p>
                     <FormMessage />
                   </div>
                 </FormItem>
@@ -411,7 +411,7 @@ export default function SellFormPage() {
                       onClick={() => field.onChange('no')}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-foreground">No, I don't have the bill</span>
+                        <span className="text-sm text-foreground">No, I don&apos;t have the bill</span>
                         {field.value === 'no' && (
                           <CheckCircle className="w-4 h-4 text-orange-600" />
                         )}
@@ -517,7 +517,7 @@ export default function SellFormPage() {
                       onClick={() => field.onChange('no')}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-foreground">No, I don't have the box</span>
+                        <span className="text-sm text-foreground">No, I don&apos;t have the box</span>
                         {field.value === 'no' && (
                           <CheckCircle className="w-4 h-4 text-orange-600" />
                         )}

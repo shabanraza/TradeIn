@@ -71,9 +71,9 @@ export default function AdminPage() {
             </div>
 
             <div className="text-center text-sm text-muted-foreground">
-              <p>If you don't have an admin account yet:</p>
+              <p>If you don&apos;t have an admin account yet:</p>
               <ol className="mt-2 space-y-1 text-left">
-                <li>1. Click "Create Admin Account" above</li>
+                <li>1. Click &quot;Create Admin Account&quot; above</li>
                 <li>2. Fill in your admin details</li>
                 <li>3. Login with your admin account</li>
                 <li>4. Access the admin panel</li>

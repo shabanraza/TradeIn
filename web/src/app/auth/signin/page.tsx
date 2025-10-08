@@ -187,7 +187,7 @@ export default function SignInPage() {
             <form onSubmit={handleVerifyOTP} className="space-y-4">
               <div className="text-center mb-4">
                 <p className="text-sm text-gray-600">
-                  We've sent a 6-digit code to <strong>{email}</strong>
+                  We&apos;ve sent a 6-digit code to <strong>{email}</strong>
                 </p>
               </div>
               <div className="space-y-2">

@@ -14,7 +14,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { ImageUpload } from '@/components/ui/image-upload';
 
 // TanStack Query hooks
-import { usePhoneBrands } from '../../../shared/hooks';
+import { usePhoneBrands } from '@/shared/hooks';
 import { LoadingSpinner } from '@/components/common/loading-spinner';
 import { ErrorBoundary } from '@/components/common/error-boundary';
 

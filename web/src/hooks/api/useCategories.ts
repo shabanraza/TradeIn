@@ -1,12 +1,8 @@
-import { useCategories as useSharedCategories, Category } from '../../../shared/hooks/useCategories';
+  import { useCategories as useSharedCategories, type ApiCategory } from '@/shared/hooks/api/useCategories';
 
-// Re-export types for convenience
-export type { Category };
+export type { ApiCategory };
 
 // Web-specific wrapper for categories hook
-export const useCategories = () => {
-  // For web, we can use relative URLs or environment variables
-  const baseURL = process.env.NEXT_PUBLIC_API_URL || '';
-  
+export const useCategories = (baseURL?: string) => {
   return useSharedCategories(baseURL);
 };

@@ -1,5 +1,12 @@
 'use client';
 
+// Extend Window interface for Google Maps
+declare global {
+  interface Window {
+    google: any;
+  }
+}
+
 import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -36,7 +43,7 @@ export default function RetailersPage() {
   // Local state for form and UI
   const [isCreating, setIsCreating] = useState(false);
   const locationInputRef = useRef<HTMLInputElement>(null);
-  const autocompleteRef = useRef<any>(null);
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const [selectedRetailer, setSelectedRetailer] = useState<Retailer | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [alert, setAlert] = useState<{ type: 'success' | 'error', message: string } | null>(null);
@@ -57,7 +64,7 @@ export default function RetailersPage() {
 
   const initializeGooglePlaces = () => {
     // Load Google Maps script if not already loaded
-    if (typeof window !== 'undefined' && !(window as any).google) {
+    if (typeof window !== 'undefined' && !window.google) {
       const script = document.createElement('script');
       script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
       script.async = true;
@@ -66,14 +73,14 @@ export default function RetailersPage() {
         initializeAutocomplete();
       };
       document.head.appendChild(script);
-    } else if ((window as any).google) {
+    } else if (window.google) {
       initializeAutocomplete();
     }
   };
 
   const initializeAutocomplete = () => {
-    if (locationInputRef.current && (window as any).google) {
-      autocompleteRef.current = new (window as any).google.maps.places.Autocomplete(
+    if (locationInputRef.current && window.google) {
+      autocompleteRef.current = new window.google.maps.places.Autocomplete(
         locationInputRef.current,
         {
           types: ['establishment', 'geocode'],
@@ -81,10 +88,10 @@ export default function RetailersPage() {
         }
       );
 
-      autocompleteRef.current.addListener('place_changed', () => {
+      autocompleteRef.current?.addListener('place_changed', () => {
         const place = autocompleteRef.current?.getPlace();
         if (place && place.formatted_address) {
-          setFormData(prev => ({ ...prev, location: place.formatted_address }));
+          setFormData(prev => ({ ...prev, location: place.formatted_address || '' }));
         }
       });
     }

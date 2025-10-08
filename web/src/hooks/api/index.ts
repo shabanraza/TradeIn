@@ -1,5 +1,5 @@
 // Export all API hooks
-export { useCategories, type Category } from './useCategories';
+export { useCategories, type ApiCategory } from './useCategories';
 export { useProducts, type Product, type UseProductsOptions } from './useProducts';
 export { useAdminStats } from './useAdminStats';
 export { useSendOTP, useVerifyOTP } from './useOtp';

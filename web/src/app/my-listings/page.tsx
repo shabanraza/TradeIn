@@ -137,7 +137,7 @@ export default function MyListingsPage() {
               <Smartphone className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
               <h3 className="text-lg font-semibold mb-2">No Listings Yet</h3>
               <p className="text-muted-foreground mb-6">
-                You haven't listed any phones for sale yet. Start by listing your first phone!
+                You haven&apos;t listed any phones for sale yet. Start by listing your first phone!
               </p>
               <Link href="/sell">
                 <Button className="bg-blue-600 hover:bg-blue-700">
