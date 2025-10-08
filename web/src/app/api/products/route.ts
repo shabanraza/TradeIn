@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db/config';
+import { db, testDatabaseConnection } from '@/lib/db/config';
 import { products, categories, users } from '@/lib/db/schema';
 import { eq, desc, and, like } from 'drizzle-orm';
 
@@ -12,6 +12,33 @@ export async function GET(request: NextRequest) {
     const limit = searchParams.get('limit');
     
     console.log('Fetching products...', { categoryId, retailerId, search, limit });
+    
+    // Check if database is properly configured
+    if (!process.env.DATABASE_URL) {
+      console.warn('⚠️ DATABASE_URL not found. Using mock database.');
+      return NextResponse.json({
+        success: true,
+        products: [],
+        message: 'Database not configured. Please set DATABASE_URL environment variable.'
+      });
+    }
+    
+    // Test database connection
+    console.log('🔍 Testing database connection...');
+    console.log('Database object type:', typeof db);
+    console.log('Database has select method:', typeof db.select);
+    
+    // Test database connection
+    const dbTest = await testDatabaseConnection();
+    if (!dbTest.success) {
+      console.error('❌ Database connection test failed:', dbTest.error);
+      return NextResponse.json({
+        success: false,
+        error: 'Database connection test failed',
+        details: dbTest.error
+      }, { status: 500 });
+    }
+    console.log('✅ Database connection test passed');
 
     let query = db
       .select({
