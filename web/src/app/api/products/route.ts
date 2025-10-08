@@ -13,16 +13,6 @@ export async function GET(request: NextRequest) {
     
     console.log('Fetching products...', { categoryId, retailerId, search, limit });
     
-    // Check if database is properly configured
-    if (!process.env.DATABASE_URL) {
-      console.warn('⚠️ DATABASE_URL not found. Using mock database.');
-      return NextResponse.json({
-        success: true,
-        products: [],
-        message: 'Database not configured. Please set DATABASE_URL environment variable.'
-      });
-    }
-    
     // Test database connection
     console.log('🔍 Testing database connection...');
     console.log('Database object type:', typeof db);
