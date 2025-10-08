@@ -1,4 +1,4 @@
-import { useProducts as useSharedProducts, UseProductsOptions, Product } from '../../../shared/hooks/useProducts';
+import { useProducts as useSharedProducts, UseProductsOptions, Product } from './useProducts';
 
 // Re-export types for convenience
 export type { Product, UseProductsOptions };

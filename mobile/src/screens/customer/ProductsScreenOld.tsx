@@ -14,14 +14,14 @@ import LocationHeader from '../../components/LocationHeader';
 import BannerCarousel from '../../components/BannerCarousel';
 import CategoryList from '../../components/CategoryList';
 import ProductList from '../../components/ProductList';
-import { Product } from '../../hooks/api/useProducts';
+import { ApiProduct } from '../../hooks/api/useProducts';
 
 const ProductsScreen: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>();
   const [showAllProducts, setShowAllProducts] = useState(false);
 
-  const handleProductPress = (product: Product) => {
+  const handleProductPress = (product: ApiProduct) => {
     console.log('Product pressed:', product);
     // TODO: Navigate to product details
   };

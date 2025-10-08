@@ -8,9 +8,9 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useProducts } from '@oldsellerapp/shared/src/hooks/api/useProducts';
 import ProductCard from './ProductCard';
 import { colors, spacing, fontSize } from '../../styles';
+import { useProducts } from '../../hooks/api/useProducts';
 
 interface ProductListProps {
   categoryId?: string;

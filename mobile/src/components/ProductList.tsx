@@ -8,7 +8,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useProducts, Product } from '@oldsellerapp/shared';
+import { useProducts, ApiProduct } from '../hooks/api/useProducts';
 import ProductCard from './ProductCard';
 import { colors, spacing, fontSize } from '../styles';
 
@@ -41,10 +41,21 @@ const ProductList: React.FC<ProductListProps> = ({
     onRefresh?.();
   };
 
-  const renderProduct = ({ item }: { item: Product }) => (
+  const renderProduct = ({ item }: { item: ApiProduct }) => (
     <ProductCard
-      product={item}
-      onPress={onProductPress}
+      product={{
+        ...item,
+        phoneType: item.phoneType || 'used',
+        title: item.title || item.name,
+        originalPrice: item.originalPrice || item.price,
+        discountPrice: item.discountPrice || item.price,
+        discountPercentage: item.discountPercentage || 0,
+        retailer: item.retailer ? {
+          name: item.retailer.name || 'Unknown Retailer',
+          businessName: item.retailer.businessName,
+        } : undefined,
+      }}
+      onPress={() => onProductPress?.(item)}
     />
   );
 

@@ -1,6 +1,6 @@
 // Mock Authentication Service for Development
 import { AuthUser } from '../types';
-import { UserRole } from '../../../shared/src/types/auth';
+import { UserRole } from '../types/auth';
 
 export interface MockAuthResponse {
   user: AuthUser;

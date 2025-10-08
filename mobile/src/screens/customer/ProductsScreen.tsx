@@ -9,8 +9,8 @@ import {
   FlatList,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useProducts } from '@oldsellerapp/shared/src/hooks/api/useProducts';
-import { useCategories } from '@oldsellerapp/shared/src/hooks/api/useCategories';
+import { useProducts } from '../../hooks/api/useProducts';
+import { useCategories } from '../../hooks/api/useCategories';
 import { colors, spacing, fontSize, borderRadius } from '../../styles';
 import LocationHeader from '../../components/LocationHeader';
 import BannerCarousel from '../../components/BannerCarousel';

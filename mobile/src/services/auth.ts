@@ -1,14 +1,10 @@
 import * as SecureStore from 'expo-secure-store';
 import { AuthUser } from '../types';
 import { API_BASE_URL } from '../config';
-import { 
-  fetchAuthSession, 
-  signOutUser, 
-  sendOTP, 
-  verifyOTP
-} from '@oldsellerapp/shared';
-import { UserRole } from '../../../shared/src/types/auth';
+
+  import { UserRole } from '../types/auth';
 import { mockAuthService } from './mock-auth';
+import { sendOTP, verifyOTP, signOutUser, fetchAuthSession } from '../api';
 
 const AUTH_KEYS = {
   ACCESS_TOKEN: 'access_token',

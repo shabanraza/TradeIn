@@ -10,7 +10,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useCategories } from '@oldsellerapp/shared';
+import { useCategories } from '../hooks/api/useCategories';
 import { usePhoneBrands, usePhoneModels, usePhoneVariants } from '../hooks/api/usePhoneData';
 import { colors, spacing, fontSize, borderRadius } from '../styles';
 

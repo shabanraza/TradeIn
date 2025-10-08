@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import { useProducts } from '@oldsellerapp/shared/src/hooks/api/useProducts';
+import { useProducts } from '../../hooks/api/useProducts';
 import { colors, spacing, fontSize, borderRadius } from '../../styles';
 import ProductCard from '../../components/ProductCard';
 
