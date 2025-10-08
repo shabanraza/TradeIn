@@ -89,6 +89,6 @@ export const testDatabaseConnection = async () => {
     const result = await db.select().from(users).limit(1);
     return { success: true, result };
   } catch (error) {
-    return { success: false, error: error.message };
+    return { success: false, error: error instanceof Error ? error.message : String(error) };
   }
 };
