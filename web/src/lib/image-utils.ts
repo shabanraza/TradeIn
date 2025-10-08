@@ -56,7 +56,7 @@ export async function processImage(
 
   // Handle SVG files differently
   if (file.type === 'image/svg+xml') {
-    return await processSVG(buffer, limits);
+    return await processSVG(buffer);
   }
 
   // Process raster images with Sharp
@@ -91,7 +91,7 @@ export async function processImage(
   };
 }
 
-async function processSVG(buffer: Buffer, limits: any): Promise<ImageProcessingResult> {
+async function processSVG(buffer: Buffer): Promise<ImageProcessingResult> {
   // For SVG, we'll just validate and return the original
   // In a real implementation, you might want to use SVGO for optimization
   const originalSize = buffer.length;

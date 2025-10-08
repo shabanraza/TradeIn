@@ -1,15 +1,12 @@
 import { 
   pgTable, 
   text, 
-  varchar, 
   boolean, 
   timestamp, 
   integer, 
   decimal,
   json,
-  uuid,
-  pgEnum,
-  bigint as pgBigint
+  pgEnum
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 

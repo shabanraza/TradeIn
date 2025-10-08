@@ -28,7 +28,7 @@ export interface Product {
   price: number;
   currency: string;
   images: string[];
-  specifications: Record<string, any>;
+  specifications: Record<string, string | number | boolean>;
   isAvailable: boolean;
   retailerId: string;
   categoryId: string;

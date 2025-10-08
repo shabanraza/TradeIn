@@ -57,7 +57,7 @@ export function isLocationMatch(location1: string, location2: string): boolean {
     'lucknow': ['lucknow']
   };
   
-  for (const [key, variations] of Object.entries(commonVariations)) {
+  for (const [, variations] of Object.entries(commonVariations)) {
     if (variations.some(v => normalized1.includes(v)) && variations.some(v => normalized2.includes(v))) {
       return true;
     }

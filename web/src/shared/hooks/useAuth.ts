@@ -4,8 +4,7 @@ import {
   fetchAuthSession, 
   signOutUser, 
   sendOTP, 
-  verifyOTP,
-  type AuthSession 
+  verifyOTP
 } from '../api/auth-api'
 
 // Hook to get current auth session

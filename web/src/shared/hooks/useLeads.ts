@@ -6,7 +6,6 @@ import {
   createLead, 
   updateLead, 
   deleteLead,
-  type Lead,
   type CreateLeadData,
   type UpdateLeadData 
 } from '../api/leads-api'

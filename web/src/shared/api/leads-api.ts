@@ -116,7 +116,7 @@ export const fetchLead = async (id: string, baseURL: string = ''): Promise<Lead>
 }
 
 // Create a new lead
-export const createLead = async (leadData: CreateLeadData, baseURL: string = ''): Promise<any> => {
+export const createLead = async (leadData: CreateLeadData, baseURL: string = ''): Promise<Lead> => {
   const response = await fetch(`${baseURL}/api/leads`, {
     method: 'POST',
     headers: {
@@ -130,7 +130,7 @@ export const createLead = async (leadData: CreateLeadData, baseURL: string = '')
     throw new Error(error.error || 'Failed to create lead')
   }
   
-  const data = await response.json() as { lead?: any } | any
+  const data = await response.json() as { lead?: Lead } | Lead
   return data.lead || data
 }
 

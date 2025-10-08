@@ -4,8 +4,7 @@ import {
   fetchPhoneBrands, 
   createPhoneBrand, 
   updatePhoneBrand, 
-  deletePhoneBrand,
-  type PhoneBrand 
+  deletePhoneBrand
 } from '../api/phone-api'
 
 // Hook to fetch all phone brands
