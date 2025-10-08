@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Output configuration
+  // Output configuration for serverless deployment
   output: 'standalone',
   
   // Image configuration
