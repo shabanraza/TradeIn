@@ -1,11 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db/config';
+import { db, testDatabaseConnection } from '@/lib/db/config';
 import { phoneBrands } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
     console.log('Fetching phone brands...');
+    
+    // Test database connection
+    console.log('🔍 Testing database connection for phone brands...');
+    const dbTest = await testDatabaseConnection();
+    if (!dbTest.success) {
+      console.error('❌ Database connection test failed:', dbTest.error);
+      return NextResponse.json({
+        success: false,
+        error: 'Database connection test failed',
+        details: dbTest.error
+      }, { status: 500 });
+    }
+    console.log('✅ Database connection test passed for phone brands');
     
     const brands = await db
       .select()

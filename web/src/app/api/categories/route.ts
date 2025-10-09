@@ -1,11 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db/config';
+import { db, testDatabaseConnection } from '@/lib/db/config';
 import { categories } from '@/lib/db/schema';
 import { eq, desc } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
     console.log('Fetching categories...');
+    
+    // Test database connection
+    console.log('🔍 Testing database connection for categories...');
+    const dbTest = await testDatabaseConnection();
+    if (!dbTest.success) {
+      console.error('❌ Database connection test failed:', dbTest.error);
+      return NextResponse.json({
+        success: false,
+        error: 'Database connection test failed',
+        details: dbTest.error
+      }, { status: 500 });
+    }
+    console.log('✅ Database connection test passed for categories');
     
     const categoriesList = await db
       .select()
@@ -44,6 +57,19 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Test database connection
+    console.log('🔍 Testing database connection for category creation...');
+    const dbTest = await testDatabaseConnection();
+    if (!dbTest.success) {
+      console.error('❌ Database connection test failed:', dbTest.error);
+      return NextResponse.json({
+        success: false,
+        error: 'Database connection test failed',
+        details: dbTest.error
+      }, { status: 500 });
+    }
+    console.log('✅ Database connection test passed for category creation');
 
     console.log('Creating category:', { name, description, image });
 

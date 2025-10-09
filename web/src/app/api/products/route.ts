@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db, testDatabaseConnection } from '@/lib/db/config';
 import { products, categories, users } from '@/lib/db/schema';
 import { eq, desc, and, like } from 'drizzle-orm';
+export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
   try {
